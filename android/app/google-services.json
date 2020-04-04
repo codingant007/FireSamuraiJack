@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1072820544120",
+    "firebase_url": "https://samuraijack-cbdb5.firebaseio.com",
+    "project_id": "samuraijack-cbdb5",
+    "storage_bucket": "samuraijack-cbdb5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1072820544120:android:2580d91c7819c8eb5c038d",
+        "android_client_info": {
+          "package_name": "com.firesamuraijack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1072820544120-qokb6prfsi1l3id0l8u28kk6s74qf3u2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqP4J-rvLuz64XuMmj__c3AQSDKKnjH5A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1072820544120-qokb6prfsi1l3id0l8u28kk6s74qf3u2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
