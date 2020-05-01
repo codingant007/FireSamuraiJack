@@ -1,4 +1,4 @@
-import { insertGame, DECK_KEY, GROUP_KEY, insertPlayer, updateCard, updateDeck, ifGameNotExists } from './database/FireBase';
+import { insertGame, DECK_KEY, GROUP_KEY, insertPlayer, updateCard, updateCards, updateDeckOrder, ifGameNotExists } from './database/FireBase';
 import { exp } from 'react-native-reanimated';
 import { ActionSheetIOS } from 'react-native';
 
@@ -58,13 +58,18 @@ export const GroupActions = {
 
 export const allCardsInDeck = fullDeck.reduce((cards, card) => { cards[card] = { id: card, status: CardStatus.DECK }; return cards; }, {});
 
-export function setupGame(gameCode) {
-    ifGameNotExists(gameCode, () => resetGame(gameCode));
+/**
+ * 1. If game does not exist, initialize deck.
+ * 2. Insert player in all cases.
+ */
+export function setupGame(gameCode, player) {
+    ifGameNotExists(gameCode, () => resetGame(gameCode), () => insertPlayer(gameCode, player));
 }
 
 export function resetGame(gameCode) {
+    console.log("Reset game game");
     insertGame(gameCode, {
-        [DECK_KEY]: allCardsInDeck,
+        [DECK_KEY]: {cards: allCardsInDeck, order: Object.keys(allCardsInDeck)},
         [GROUP_KEY]: {}
     });
 }
@@ -75,7 +80,7 @@ export function currentPlayerGroup(player) {
 }
 
 export function addPlayerToGame(gameCode, player) {
-    insertPlayer(gameCode, player);
+    
 }
 
 /**
@@ -87,7 +92,7 @@ export function deckReducer(deckState, action) {
     console.log("Action: " + JSON.stringify(action));
     switch (action.type) {
         case DB_ACTIONS.SET_STATE:
-            return action.payload.newDeckState;
+            return updateState(deckState, action.payload);
         case PLAYER_ACTIONS.PLAY_CARD:
             return playCard(deckState, action.payload);
         case DEALER_ACTIONS.SETTLE_POOL:
@@ -108,13 +113,28 @@ export function deckReducer(deckState, action) {
     return deckState;
 }
 
+function updateState(deckState, actionPayload) {
+    if(isValid(actionPayload.newDeckState)) {
+        return actionPayload.newDeckState;
+    }
+    console.log("DB is in illegal state. Not pulling changes.")
+    return deckState;
+}
+
+function isValid(deckState) {
+    return deckState
+            && deckState.cards
+            && deckState.order
+            && Object.keys(deckState.cards).length === fullDeck.length
+            && deckState.order.length === fullDeck.length
+}
+
 function shuffleCards(deckState, actionPayload) {
     const gameCode = actionPayload.gameCode;
-    const newDeckState = shuffle(Object.values(deckState))
-                            .reduce((cards, card) => {return {...cards, [card.id]: card}}, {});
-    updateDeck(gameCode, newDeckState);
-    console.log("Before shuffle: " + JSON.stringify(deckState));
-    console.log("After shuffle: " + JSON.stringify(newDeckState));
+    const shuffledOrder = shuffle(deckState.order);
+    updateDeckOrder(gameCode, shuffledOrder);
+    console.log("Before shuffle: " + JSON.stringify(deckState.order));
+    console.log("After shuffle: " + Array.toString(shuffledOrder));
     return deckState;
 }
 
@@ -147,8 +167,8 @@ function settlePool(deckState, actionPayload) {
     const targetPlayerName = actionPayload.player.playerName;
     const gameCode = actionPayload.gameCode;
 
-    newDeckState = Object.values(deckState).reduce((moveCardToPlayerPool(targetPlayerName), {}));
-    updateDeck(gameCode, newDeckState);
+    cardsAfterSettle = Object.values(deckState.cards).reduce((moveCardToPlayerPool(targetPlayerName), {}));
+    updateCards(gameCode, cardsAfterSettle);
 
     return deckState;
 }
@@ -185,7 +205,7 @@ function distributeCards(deckState, actionPayload) {
     console.log("Before distribute: " + JSON.stringify(Object.values(deckState)));
 
     const nextPlayer = cyclicIterator(players);
-    const newDeckState = Object.values(deckState)
+    const cardsAfterDistribute = Object.values(deckState.cards)
                                .map((card, i) => {
                                     console.log(i);
                                     console.log(JSON.stringify(card));
@@ -194,11 +214,11 @@ function distributeCards(deckState, actionPayload) {
                                    }
                                    return card;
                                 })
-                               .reduce((deckState, card) => { return { ...deckState, [card.id]: card } }, {});
-    console.log("New deck state length: " + Object.keys(newDeckState).length);
-    console.log("New deck state: " + JSON.stringify(newDeckState));
+                               .reduce((cards, card) => { return { ...cards, [card.id]: card } }, {});
+    console.log("New deck state length: " + Object.keys(cardsAfterDistribute).length);
+    console.log("New deck state: " + JSON.stringify(cardsAfterDistribute));
 
-    updateDeck(gameCode, newDeckState);
+    updateCards(gameCode, cardsAfterDistribute);
     return deckState;
 }
 
@@ -216,15 +236,8 @@ function cyclicIterator(array) {
 
 function collectCards(deckState, actionPayload) {
     const gameCode = actionPayload.gameCode;
-    const newDeckState = Object.values(deckState).reduce(moveCardToDeck, {});
-    console.log("collectCards DeckState.length: " + Object.keys(deckState).length);
-    console.log("collectCards NewDeckState.length: " + Object.keys(newDeckState).length);
-    Object.keys(deckState).forEach((cardId) => {
-        if(!newDeckState[cardId]) {
-            console.log("collectCards missing: " + cardId);
-        }
-    })
-    updateDeck(gameCode, newDeckState);
+    const cardsAfterCollect = Object.values(deckState.cards).reduce(moveCardToDeck, {});
+    updateCards(gameCode, cardsAfterCollect);
     return deckState;
 }
 

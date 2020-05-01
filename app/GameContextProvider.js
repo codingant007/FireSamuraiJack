@@ -9,7 +9,7 @@ export function GameContextProvider({children, gameCode}) {
     
     const {playerName, isDealer} = useContext(PlayerContext);
     const player = {playerName, isDealer};
-    const [deckState, dispatchDeckAction] = useReducer(deckReducer, allCardsInDeck, (initialState) => initialState);
+    const [deckState, dispatchDeckAction] = useReducer(deckReducer, {cards: allCardsInDeck, order: Object.keys(allCardsInDeck)}, (initialState) => initialState);
     const [groupState, dispatchGroupAction] = useReducer(groupReducer, player, currentPlayerGroup);
 
     console.log("CurrentPlayerGroup(player): " + currentPlayerGroup(player));
@@ -17,8 +17,7 @@ export function GameContextProvider({children, gameCode}) {
     console.log("Initial groupState: " + JSON.stringify(groupState));
 
     useEffect(() => {
-        setupGame(gameCode);
-        addPlayerToGame(gameCode, {playerName, isDealer});
+        setupGame(gameCode, {playerName, isDealer});     
     }, [gameCode]);
 
     // Subscribe to deck and group updates. useEffect will use off callbacks and make sure that they are un-subscribed when component is no loonger needed.

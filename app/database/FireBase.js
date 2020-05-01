@@ -5,9 +5,12 @@ const firebase = database();
 
 /**
  * Resource paths:
- *      - Card: <GameCode>/cards/<CardId>
- *      - Player: <GameCode>/players/<PlayerName>
+ *      - Order: <GameCode>/deck/order/<Order>
+ *      - Card: <GameCode>/deck/cards/<CardId>/<Card>
+ *      - Player: <GameCode>/players/<PlayerName>/<Player>
  * Schema:
+ *      - Order:
+ *          [cardId...]
  *      - Card:
  *          cardId:
  *          cardStatus:
@@ -17,7 +20,9 @@ const firebase = database();
  *          isDealer:
  *          
  */
-export const DECK_KEY = "cards";
+export const DECK_KEY = "deck";
+export const DECK_CARDS_KEY = "cards";
+export const DECK_ORDER_KEY = "order";
 export const GROUP_KEY = "players"
 
 /**
@@ -45,14 +50,15 @@ export function onGroupUpdate(gameCode, setGroupState) {
     return () => {console.log("Turning off updates from group");groupReference.off('value');};
 }
 
-export function ifGameNotExists(gameCode, callback) {
+export function ifGameNotExists(gameCode, ifNotExists, andThen) {
     firebase.ref()
     .child(gameCode)
     .once('value', snapshot => {
         console.log("ExistingGame: " + JSON.stringify(snapshot.val()));
         if(!snapshot.val()) {
-            callback();
+            ifNotExists();
         }
+        andThen();
     })
 }
 
@@ -80,14 +86,25 @@ export function updateCard(gameCode, card) {
     firebase.ref()
             .child(gameCode)
             .child(DECK_KEY)
+            .child(DECK_CARDS_KEY)
             .child(card.id)
             .set(card);
 }
 
-export function updateDeck(gameCode, deckState) {
-    console.log("Updating full deck: " + JSON.stringify(deckState));
+export function updateCards(gameCode, cards) {
+    console.log("Updating full deck: " + JSON.stringify(cards));
     firebase.ref()
             .child(gameCode)
             .child(DECK_KEY)
-            .set(deckState);
+            .child(DECK_CARDS_KEY)
+            .set(cards);
+}
+
+export function updateDeckOrder(gameCode, order) {
+    console.log("Updating deck order: " + JSON.stringify(order));
+    firebase.ref()
+            .child(gameCode)
+            .child(DECK_KEY)
+            .child(DECK_ORDER_KEY)
+            .set(order);
 }

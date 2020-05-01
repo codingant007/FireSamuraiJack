@@ -211,17 +211,17 @@ function Group() {
 function Player({ player }) {
   // TODO: Make this more sophisticated instead of just a text. Avatar, icon for indicating a dealer, numCards badge etc.
   const { deckState } = useContext(GameContext);
-  console.log("Total cards: " + Object.keys(deckState).length);
   const playerNameText = player.playerName;
   const isDealerText = player.isDealer ? "(Dealer)" : "";
-  const displayText = playerNameText + " " + getNumCardsInHand(player, deckState) + " " + isDealerText;
+  console.log("Player tag deckState: " + deckState);
+  const displayText = playerNameText + " " + getNumCardsInHand(player, deckState.cards) + " " + isDealerText;
   return (
     <Text>{displayText}</Text>
   );
 }
 
-function getNumCardsInHand(player, deckState) {
-  return Object.values(deckState)
+function getNumCardsInHand(player, cards) {
+  return Object.values(cards)
                .filter((card) => card.playerName === player.playerName)
                .length;
 }
@@ -271,7 +271,8 @@ function Pool() {
   const { deckState } = useContext(GameContext);
 
   // TODO: Change type to POOL after testing UI.
-  const cardsInPool = Object.values(deckState).filter((card) => card.status == CardStatus.POOL);
+  console.log("Pool tag deckState: " + deckState);
+  const cardsInPool = Object.values(deckState.cards).filter((card) => card.status == CardStatus.POOL);
   console.log(cardsInPool);
   return (
     <View style={styles.listcontainer}>
@@ -293,7 +294,8 @@ function PlayerHand() {
   const [actionCard, setActionCard] = useState();
 
   // TODO: Change type to HAND after testing UI.
-  const cardsInPlayerHand = Object.values(deckState).filter((card) => card.status == CardStatus.HAND && card.playerName == playerName);
+  console.log("PlayerHand tag deckState: " + deckState);
+  const cardsInPlayerHand = Object.values(deckState.cards).filter((card) => card.status == CardStatus.HAND && card.playerName == playerName);
   console.log("CardsInPlayerHand: " + JSON.stringify(cardsInPlayerHand));
   return (
     <View style={styles.container}>
