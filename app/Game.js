@@ -6,15 +6,11 @@ import { ActionSheetIOS } from 'react-native';
  * All Constants needed for game go here
  */
 
-// const fullDeck = [
-//     "as", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s", "10s", "js", "qs", "ks",
-//     "ac", "2c", "3c", "4c", "5c", "6c", "7c", "8c", "9c", "10c", "jc", "qc", "kc",
-//     "ah", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "9h", "10h", "jh", "qh", "kh",
-//     "ad", "2d", "3d", "4d", "5d", "6d", "7d", "8d", "9d", "10d", "jd", "qd", "kd"
-// ];
-
 const fullDeck = [
-    "card1", "card2", "card3", "card4"
+    "as", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s", "10s", "js", "qs", "ks",
+    "ac", "2c", "3c", "4c", "5c", "6c", "7c", "8c", "9c", "10c", "jc", "qc", "kc",
+    "ah", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "9h", "10h", "jh", "qh", "kh",
+    "ad", "2d", "3d", "4d", "5d", "6d", "7d", "8d", "9d", "10d", "jd", "qd", "kd"
 ];
 
 export const CardStatus = {
@@ -30,9 +26,7 @@ export const CardStatus = {
  *      - Pick from deck
  */
 export const PLAYER_ACTIONS = {
-    PLAY_CARD: {
-        name: "PLAY_CARD",
-    }
+    PLAY_CARD: "PLAY_CARD"
 };
 
 /**
@@ -154,7 +148,7 @@ function playCard(deckState, actionPayload) {
     const playerName = actionPayload.player.playerName;
     const gameCode = actionPayload.gameCode;
     const cardId = actionPayload.card.id;
-    const cardFromDeck = deckState[cardId];
+    const cardFromDeck = deckState.cards[cardId];
     if (cardFromDeck.status === CardStatus.HAND && cardFromDeck.playerName === playerName) {
         // const newDeckState = {...deckState, [cardId]: {id: cardId, status: CardStatus.POOL}};
         updateCard(gameCode, { id: cardId, status: CardStatus.POOL })
@@ -205,8 +199,9 @@ function distributeCards(deckState, actionPayload) {
     console.log("Before distribute: " + JSON.stringify(Object.values(deckState)));
 
     const nextPlayer = cyclicIterator(players);
-    const cardsAfterDistribute = Object.values(deckState.cards)
-                               .map((card, i) => {
+    const cardsAfterDistribute = deckState.order
+                               .map((cardId, i) => {
+                                   const card = deckState.cards[cardId];
                                     console.log(i);
                                     console.log(JSON.stringify(card));
                                    if(card.status == CardStatus.DECK) {

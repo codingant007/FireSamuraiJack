@@ -4,7 +4,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import { PlayerContext } from "./PlayerContextProvider";
 import { PlayerName } from "./PlayerName";
 import { GameContextProvider, GameContext } from "./GameContextProvider";
-import { CardStatus, DEALER_ACTIONS } from "./Game";
+import { CardStatus, DEALER_ACTIONS, PLAYER_ACTIONS } from "./Game";
 import RBSheet from "react-native-raw-bottom-sheet";
 
 
@@ -65,7 +65,7 @@ function DealerGameStartScreen({ route, navigation }) {
   const [gameCode, setGameCode] = useState("GUYFAWKS");
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1, justifyContent: 'center' }}>
       <PlayerName />
       <TextInput
         style={styles.textinput}
@@ -222,12 +222,14 @@ function Player({ player }) {
 
 function getNumCardsInHand(player, cards) {
   return Object.values(cards)
-               .filter((card) => card.playerName === player.playerName)
-               .length;
+    .filter((card) => card.playerName === player.playerName)
+    .length;
 }
 
 function ActionList({ card }) {
-  const actions = ["DROP", "PICK"];
+  const { gameCode, dispatchDeckAction } = useContext(GameContext);
+  const { playerName, isDealer } = useContext(PlayerContext);
+  const actions = [PLAYER_ACTIONS.PLAY_CARD];
   if (card) {
     return (<FlatList
       keyExtractor={(_, index) => index.toString()}
@@ -235,7 +237,17 @@ function ActionList({ card }) {
       renderItem={({ item, index }) => (
         <TouchableHighlight
           key={index}
-          onPress={() => console.log("Action: " + item + ", CardId: " + card.id)}>
+          onPress={() => dispatchDeckAction(
+            {
+              type: item,
+              payload: {
+                gameCode: gameCode,
+                player: { playerName: playerName, isDealer: isDealer },
+                card: card
+              }
+            }
+          )}
+        >
           <View style={{ backgroundColor: 'green', flexDirection: 'row', flex: 1 }}>
             <Text> CardId: {card.id}, Action: {item}</Text>
           </View>
