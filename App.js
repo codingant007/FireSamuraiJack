@@ -6,10 +6,14 @@
  */
 
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, TextInput, View, TouchableHighlight } from 'react-native';
+import { Platform, StyleSheet, Text, TextInput, View, Button, } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { HomeScreen, SetPlayerDetailsScreen, DealerGameStartScreen, PlayerJoinGameScreen, GamePlayScreen } from './app/Screens';
 
 import firebase from '@react-native-firebase/app';
 import database from '@react-native-firebase/database';
+import { PlayerContextProvider } from './app/PlayerContextProvider';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\nCmd+D or shake for dev menu',
@@ -22,6 +26,8 @@ const firebaseCredentials = Platform.select({
 });
 
 const realtimeDataReference = database().ref('/testkey');
+
+const Stack = createStackNavigator();
 
 type Props = {};
 
@@ -38,33 +44,33 @@ function writeToFirebase(data) {
 
 export default class App extends Component<Props> {
   constructor(props) {
-    super(props);
+    super(props); 
     this.state = {
       realtimedata: null,
       updatedata: null
     }
-    onFirebaseUpdate(data => this.setState({realtimedata: data}));
   }
 
   render() {
     return (
-      <View style={styles.container}>
-      <Text style={styles.welcome}>Welcome to React Native + Firebase!</Text>
-        <Text> Realtime data: {this.state.realtimedata}</Text>
-        <TextInput
-          style={styles.textinput}
-          onChangeText={text => this.setState({updatedata: text})}
-        />
-        <TouchableHighlight style={styles.button} onPress={() => writeToFirebase(this.state.updatedata)}>
-          <Text> Touch Here </Text>
-        </TouchableHighlight>
-      </View>
+      <PlayerContextProvider>
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ title: 'HomeScreen' }} />
+            <Stack.Screen name="SetPlayerDetailsScreen" component={SetPlayerDetailsScreen} />
+            <Stack.Screen name="DealerGameStartScreen" component={DealerGameStartScreen} />
+            <Stack.Screen name="PlayerJoinGameScreen" component={PlayerJoinGameScreen} />
+            <Stack.Screen name="GamePlayScreen" component={GamePlayScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </PlayerContextProvider>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  textinput: { height: 40,
+  textinput: {
+    height: 40,
     borderColor: 'gray',
     borderWidth: 1
   },
