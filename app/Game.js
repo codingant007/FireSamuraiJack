@@ -18,7 +18,7 @@ export const CardStatus = {
     DISCARDED: "DISCARDED",
     POOL: "POOL",
     HAND: "HAND",
-    PLAYER_POOL: "PLAYER_POOL"
+    PLAYER_POOL: "PLAYER_POOL",
 };
 
 /**
@@ -161,7 +161,7 @@ function settlePool(deckState, actionPayload) {
     const targetPlayerName = actionPayload.player.playerName;
     const gameCode = actionPayload.gameCode;
 
-    cardsAfterSettle = Object.values(deckState.cards).reduce((moveCardToPlayerPool(targetPlayerName), {}));
+    cardsAfterSettle = Object.values(deckState.cards).reduce(moveCardToPlayerPool(targetPlayerName), {});
     updateCards(gameCode, cardsAfterSettle);
 
     return deckState;

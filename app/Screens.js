@@ -6,6 +6,7 @@ import { PlayerName } from "./PlayerName";
 import { GameContextProvider, GameContext } from "./GameContextProvider";
 import { CardStatus, DEALER_ACTIONS, PLAYER_ACTIONS } from "./Game";
 import RBSheet from "react-native-raw-bottom-sheet";
+import { SettlePoolToPlayer } from "./SettlePool";
 
 
 function HomeScreen({ navigation, route }) {
@@ -108,22 +109,7 @@ function PlayerJoinGameScreen({ route, navigation }) {
   );
 }
 
-function GamePlayScreen({ route, navigation }) {
-  console.log("Route params: " + JSON.stringify(route.params));
-  return (
-    <GameContextProvider gameCode={route.params.gameCode}>
-      <View style={styles.container}>
-        <PlayerName />
-        <DealerGamePlayArea route={route} navigation={navigation} />
-        <PlayerGamePlayArea route={route} navigation={navigation} />
-        <Button
-          onPress={() => navigation.navigate('HomeScreen')}
-          title="Exit Game"
-        />
-      </View>
-    </GameContextProvider>
-  );
-}
+
 
 function DealerGamePlayArea({ route, navigation }) {
   const { gameCode, dispatchDeckAction, groupState } = useContext(GameContext);
@@ -157,6 +143,7 @@ function DealerGamePlayArea({ route, navigation }) {
           })}
         title="Distribute cards"
       />
+      <SettlePoolToPlayer />
       <Button
         onPress={() => dispatchDeckAction(
           {
@@ -248,7 +235,7 @@ function ActionList({ card }) {
             }
           )}
         >
-          <View style={{ backgroundColor: 'green', flexDirection: 'row', flex: 1 }}>
+          <View style={{ backgroundColor: 'grey', flexDirection: 'row', flex: 1 }}>
             <Text> CardId: {card.id}, Action: {item}</Text>
           </View>
         </TouchableHighlight>
@@ -258,7 +245,7 @@ function ActionList({ card }) {
   return null;
 }
 
-function ActionInput({ bottomSheetRef, actionCard, actions }) {
+function ActionInput({ bottomSheetRef, actionContext }) {
   return (
     <RBSheet
       ref={bottomSheetRef}
@@ -274,7 +261,7 @@ function ActionInput({ bottomSheetRef, actionCard, actions }) {
       }}
     >
       <Button title="CLOSE BOTTOM SHEET" onPress={() => bottomSheetRef.current.close()} />
-      <ActionList card={actionCard} />
+      <ActionList card={actionContext} />
     </RBSheet>
   )
 }
@@ -305,13 +292,12 @@ function PlayerHand() {
   const bottomSheetRef = useRef();
   const [actionCard, setActionCard] = useState();
 
-  // TODO: Change type to HAND after testing UI.
   console.log("PlayerHand tag deckState: " + deckState);
   const cardsInPlayerHand = Object.values(deckState.cards).filter((card) => card.status == CardStatus.HAND && card.playerName == playerName);
   console.log("CardsInPlayerHand: " + JSON.stringify(cardsInPlayerHand));
   return (
     <View style={styles.container}>
-      <ActionInput bottomSheetRef={bottomSheetRef} actionCard={actionCard} />
+      <ActionInput bottomSheetRef={bottomSheetRef} actionContext={actionCard} />
       <FlatList
         keyExtractor={(_, index) => index.toString()}
         data={cardsInPlayerHand}
@@ -320,7 +306,7 @@ function PlayerHand() {
             <TouchableHighlight
               key={index}
               onPress={() => { setActionCard(item); bottomSheetRef.current.open(); }}>
-              <View style={{ backgroundColor: 'green', flexDirection: 'row', flex: 1 }}>
+              <View style={{ backgroundColor: 'grey', flexDirection: 'row', flex: 1 }}>
                 <Text>Card: {item.id}, Index: {index}</Text>
               </View>
             </TouchableHighlight>
@@ -331,7 +317,7 @@ function PlayerHand() {
   )
 }
 
-export { HomeScreen, SetPlayerDetailsScreen, DealerGameStartScreen, PlayerJoinGameScreen, GamePlayScreen };
+export { HomeScreen, SetPlayerDetailsScreen, DealerGameStartScreen, PlayerJoinGameScreen };
 
 const styles = StyleSheet.create({
   centeredView: {
@@ -369,12 +355,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'powderblue',
   },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
+  container: { flex: 1, justifyContent: 'center' },
   welcome: {
     fontSize: 20,
     textAlign: 'center',
